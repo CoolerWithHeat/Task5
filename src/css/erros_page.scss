@@ -1,0 +1,103 @@
+#errorsPage{
+    & {
+        font-family: sans-serif;
+        color: black
+    }
+    
+    header {
+        text-align: center;
+        padding: 20px;
+        background-color: #f2f2f2;
+    }
+    
+    h1 {
+        font-size: 15px
+    }
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+    
+    th, td {
+        border: none;
+        padding: 8px;
+        text-align: left; 
+    }
+    #SeedsClosure{
+        width: 210px;
+        height: 30px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        #SeedsClosureChild2{
+            width: 100%;
+            height: 100%;
+            font-size: 25px;
+            border-style: solid;
+            border-width: 1px;
+            text-align: center;
+            height: 26px;
+            border-color: rgb(175, 108, 108);
+            border-radius: 4px;
+            border-style: solid;    
+            margin-left: 3px;
+        }
+
+        #SeedsClosureChild3{
+            height: 100%;
+            font-size: 25px;
+            text-align: center;
+            height: 26px;
+            border-color: rgb(175, 108, 108);
+            border-radius: 4px;
+        }
+        .ErrorsManualOutput{
+            display: none;
+        }
+    }
+
+    #MainSection{
+        width: 250px;
+        height: 30px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        
+        #child2{
+            margin-left: 15px;
+        }
+
+        #child3{
+            font-size: 15px;
+            width: 30%;
+            margin-left: 15px;
+            height: 100%;
+            border-style: solid;
+            border-width: 1px;
+            text-align: center;
+            height: 26px;
+            border-color: rgb(175, 108, 108);
+            border-radius: 4px;
+        }
+    }
+
+    #RegionClosure{
+        width: 250px;
+        height: 30px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        #choicesField{
+            width: 70%;
+        }
+    }
+
+    #MainBar{
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
