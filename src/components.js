@@ -12,33 +12,34 @@ const IntroduceErrors = (errorRate, data)=>{
     
     if (errorRate == 0)
         return data
-      function introduceRandomErrors(input) {
-        const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+[]{}|;:,.<>?'.split('');
-        const errorCount = Math.floor(input.length * (errorRate / 10));
-    
-        for (let i = 0; i < errorCount; i++) {
-          const randomIndex = Math.floor(Math.random() * input.length);
-          const randomCharacter = characters[Math.floor(Math.random() * characters.length)];
-          input = input.slice(0, randomIndex) + randomCharacter + input.slice(randomIndex);
-        }
-    
-        return input;
-      }
 
-      const errorData = { ...data };
-      if (errorData.id) errorData.id = introduceRandomErrors(errorData.id);
-      if (errorData.name) errorData.name = introduceRandomErrors(errorData.name);
-      if (errorData.address) errorData.address = introduceRandomErrors(errorData.address);
-      if (errorData.phone) errorData.phone = introduceRandomErrors(errorData.phone);
+    function introduceRandomErrors(input, maxErrors = 6) {
+        const characters = '!@;skmeozxkasdk'.split('');
+        const errorCount = Math.min(Math.floor(input.length * errorRate), maxErrors);
+        
+        for (let i = 0; i < errorCount; i += 1) {
+            const randomIndex = Math.floor(Math.random() * input.length);
+            const randomCharacter = characters[Math.floor(Math.random() * characters.length)];
+            input = input.slice(0, randomIndex) + randomCharacter + input.slice(randomIndex);
+        }
+        
+        return input;
+        }
+      
     
-      return errorData;
+    const errorData = { ...data };
+    if (errorData.id) errorData.id = introduceRandomErrors(errorData.id);
+    if (errorData.name) errorData.name = introduceRandomErrors(errorData.name);
+    if (errorData.address) errorData.address = introduceRandomErrors(errorData.address);
+    if (errorData.phone) errorData.phone = introduceRandomErrors(errorData.phone);
+    
+    return errorData;
 }
 
 export function ErrorsPage(){
 
-    const [isScrollingDown, setIsScrollingDown] = React.useState(false);
     const [sliderValue, Update_sliderValue] = React.useState(1)
-    const [manual_ErrorValue, Update_manualErrorValue] = React.useState(4)
+    const [lastBatch, Update_lastBatch] = React.useState(0)
     const [Region_Index, Update_Region_Index] = React.useState(0)
     const [seedValue, Update_seedValue] = React.useState(0)
     const [ScrolledTimes, Update_ScrolledTimes] = React.useState(0)
@@ -56,14 +57,16 @@ export function ErrorsPage(){
     function AddMoreUsers(){
         if (ScrolledTimes > 0){ 
             let created_users = [];
-            for (let i = 0; i < 3; i++) {
+            for (let i = parseInt(lastBatch); i < parseInt(lastBatch)+3; i++) {
                 const UserInstance = {
+                    index: i,
                     id: faker.number.int(),
                     name: faker.person.fullName(),
                     address: faker.address.streetAddress(),
                     phone: faker.phone.number()
                 };
-                created_users.push(IntroduceErrors(Math.min(sliderValue, 10) , UserInstance))
+                Update_lastBatch(Main=>i)
+                created_users.push(IntroduceErrors(Math.round(Math.min(sliderValue, 10)) , UserInstance))
             }
             Update_users(Main=>{
                 return [...users, ...created_users]
@@ -75,28 +78,31 @@ export function ErrorsPage(){
         let created_users = [];
         for (let i = 0; i < 30; i++) {
             const UserInstance = {
+                index: i,
                 id: faker.number.int(),
                 name: faker.person.fullName(),
                 address: faker.address.streetAddress(),
                 phone: faker.phone.number()
             };
+            Update_lastBatch(Main=>i)
             created_users.push(IntroduceErrors(Math.min(sliderValue, 10), UserInstance))
         }
+        
         Update_users(Main=>{
             return created_users
         })
     }
     
     const processedUsers = users.map(Main=>{
-        return <UserInstace id={Main.id} name={Main.name} address={Main.address} phone={Main.phone}/>
+        return <UserInstace RowIndex={Main.index} id={Main.id} name={Main.name} address={Main.address} phone={Main.phone}/>
     })
 
       
       function downloadCSV(){
         if (users && users.length > 0) {
             const csvContent = [
-              Object.keys(users[0]).join(','), // Create a header row with object keys
-              ...users.map((item) => Object.values(item).join(',')), // Create rows with values
+              Object.keys(users[0]).join(','),
+              ...users.map((item) => Object.values(item).join(',')),
             ].join('\n');
         
             const blob = new Blob([csvContent], { type: 'text/csv' });
@@ -137,13 +143,19 @@ export function ErrorsPage(){
         Update_Region_Index(Main=>tagpoint.target.value)
     }
     const handleScroll = (event)=>{
-        if (event.deltaY > 0) {
-            Update_ScrolledTimes(Main=>window.scrollY)
-          }
+            Update_ScrolledTimes(Main=>window.scrollY/60)
     }
 
     React.useEffect(Main=>{
-        document.addEventListener('wheel', handleScroll)
+        let lastScrollPosition = window.scrollY;
+        window.addEventListener("scroll", () => {
+            const currentScrollPosition = window.scrollY;
+            if (currentScrollPosition > lastScrollPosition) {
+                handleScroll('ass')
+            }
+    
+            lastScrollPosition = currentScrollPosition;
+          });
     }, [])
 
     React.useEffect(Main=>{
@@ -217,8 +229,8 @@ export function ErrorsPage(){
                     </div>
 
                 </div>
-
-            <button onClick={downloadCSV} style={{marginRight:'50px'}} className='btn btn-primary'>Export To CSV</button>
+            <br/>
+            <button id='export_button' onClick={downloadCSV} className='btn btn-primary'>Export To CSV</button>
             
             </div>
             <br/>
@@ -227,6 +239,7 @@ export function ErrorsPage(){
             <table style={{width:'90%', margin:'auto'}}>
                 <thead>
                     <tr>
+                        <th>Index</th>
                         <th>ID</th>
                         <th>Name</th>
                         <th>Address</th>
@@ -243,9 +256,10 @@ export function ErrorsPage(){
     )
 }
 
-function UserInstace({id, name, address, phone}){
+function UserInstace({RowIndex=1, id, name, address, phone}){
     return (
         <tr>
+            <td>{RowIndex}</td>
             <td>{id}</td>
             <td>{name}</td>
             <td>{address}</td>
